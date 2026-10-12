@@ -28,17 +28,21 @@ void swapChildren(TreeNode* node) {
     node->right = temp;
 }
 
-// Function to get nodes at a specific depth
-void getNodesAtDepth(TreeNode* root, int targetDepth, int currentDepth, vector<TreeNode*>& nodes) {
+// Function to compute depth of each node and store nodes by depth
+void computeDepths(TreeNode* root, vector<vector<TreeNode*>>& nodesByDepth, int currentDepth) {
     if (root == nullptr) return;
     
-    if (currentDepth == targetDepth) {
-        nodes.push_back(root);
-        return;
+    // Ensure the vector has enough space for this depth
+    if (currentDepth >= nodesByDepth.size()) {
+        nodesByDepth.resize(currentDepth + 1);
     }
     
-    getNodesAtDepth(root->left, targetDepth, currentDepth + 1, nodes);
-    getNodesAtDepth(root->right, targetDepth, currentDepth + 1, nodes);
+    // Add current node to its depth level
+    nodesByDepth[currentDepth].push_back(root);
+    
+    // Recursively process children
+    computeDepths(root->left, nodesByDepth, currentDepth + 1);
+    computeDepths(root->right, nodesByDepth, currentDepth + 1);
 }
 
 int main() {
@@ -64,6 +68,10 @@ int main() {
         }
     }
     
+    // Precompute depths and store nodes by depth
+    vector<vector<TreeNode*>> nodesByDepth;
+    computeDepths(nodes[1], nodesByDepth, 1);  // Root is at depth 1
+    
     int t;
     cin >> t;
     
@@ -73,11 +81,8 @@ int main() {
         cin >> k;
         
         // For each depth that is a multiple of k, swap children of all nodes at that depth
-        for (int depth = k; depth <= n; depth += k) {
-            vector<TreeNode*> nodesAtDepth;
-            getNodesAtDepth(nodes[1], depth, 1, nodesAtDepth);
-            
-            for (TreeNode* node : nodesAtDepth) {
+        for (int depth = k; depth < nodesByDepth.size(); depth += k) {
+            for (TreeNode* node : nodesByDepth[depth]) {
                 swapChildren(node);
             }
         }
